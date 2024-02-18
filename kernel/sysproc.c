@@ -91,3 +91,16 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+uint64
+sys_trace(void)
+{
+  //get the syscall number
+  int syscallNum;
+  argint(0, &syscallNum);
+  acquire(&myproc()->lock);
+  //set the syscall number to the tracenum
+  myproc()->tracenum = syscallNum;
+  release(&myproc()->lock);
+  return 0;
+}

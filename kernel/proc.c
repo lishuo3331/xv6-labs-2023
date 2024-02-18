@@ -320,6 +320,7 @@ fork(void)
 
   acquire(&np->lock);
   np->state = RUNNABLE;
+  np->tracenum = p->tracenum;
   release(&np->lock);
 
   return pid;
