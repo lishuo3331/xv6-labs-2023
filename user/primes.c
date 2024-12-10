@@ -2,64 +2,58 @@
 #include "kernel/stat.h"
 #include "user/user.h"
 #include "kernel/fs.h"
-int p[36][2];
-
-int isPrime(int n)
-{
-    int i = 0;
-    for(i = 2; i < n; i++)
-    {
-        if(0 == n % i)
-        {
-            return 0;
-        }
-    }
-    return 1;
-    exit(0);
-}
-
-void prime(int n, int fd)
+int p[1][2];
+void prime(int fd, int *num, int cot)
 {
     int ret = ERROR_SUCCESS;
-    int temp = 0;
-    if(n >  35)
+    if(fd >  35)
     {
         exit(0);
     }
-    if(1 == isPrime(n))
+    ret = pipe(p[fd]);
+    if(ERROR_SUCCESS != ret)
     {
-        ret = pipe(p[fd]);
-        if(ERROR_SUCCESS != ret)
+        printf("primes: apply pipe error\n");
+        exit(-1);
+    }
+    ret = fork();
+    //子进程从pipe fd读数据 关闭写端
+    if(0 == ret)
+    {
+        close(p[fd][1]);
+        int n = 0;
+        if(read(p[fd][0], &n, sizeof(n)) > 0)
         {
-            printf("primes: pipe error");
-            exit(-1);
-        }
-        ret = fork();
-        if(0 > ret)
-        {
-            printf("primes: fork error\n");
-            exit(-1);
-        }
-        if(0 == ret)
-        {
+            int index = 0;
+            int m = 0;
+            printf("prime %d\n", n);
+            while(read(p[fd][0], &m, sizeof(m)) > 0)
+            {
+                if(m % n != 0)
+                {
+                    num[index++] = m;
+                }
+            }
             close(p[fd][0]);
-            write(p[fd][1], &n, sizeof(n));
-            close(p[fd][1]);
+            prime(fd,num,index);
         }
         else
         {
-            close(p[fd][1]);
-            read(p[fd][0], &temp, sizeof(temp));
-            printf("prime %d\n", temp);
             close(p[fd][0]);
-            prime(n + 1, fd + 1);
         }
+        exit(0);
     }
+    //父进程向pipe fd 发数据 关闭读端
     else
     {
-        prime(n + 1, fd);
+        close(p[fd][0]);
+        for(int i = 0; i < cot; ++i)
+        {
+            write(p[fd][1], &num[i], sizeof(num[i]));
+        }
+        close(p[fd][1]);
+        wait(0);
     }
-
 }
 int main(int argc, char *argv[])
 {
@@ -68,6 +62,12 @@ int main(int argc, char *argv[])
         printf("primes: argc error\n");
         exit(-1);
     }
-    prime(2, 0);
+    int num[36] = {0};
+    for(int i = 2; i <= 35; ++i)
+    {
+        num[i-2] = i;
+    }
+    // 传递左侧pipe 下标
+    prime(0, num, 34);
     exit(0);
 }

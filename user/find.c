@@ -37,8 +37,11 @@ void find(char *path, char *target)
         close(fd);
         return;
     }
+    //类型有3种 普通文件 文件夹 设备文件
+    //处理普通文件和文件夹
     switch(st.type)
     {
+        //普通文件 
         case T_FILE:
         {
             close(fd);
@@ -49,6 +52,7 @@ void find(char *path, char *target)
             }
             break;
         }
+        //文件夹
         case T_DIR:
         {
             if(strlen(path) + 1 + DIRSIZ + 1 > sizeof(buf))
@@ -63,6 +67,7 @@ void find(char *path, char *target)
             while(read(fd, &de, sizeof(de)) == sizeof(de))
             {
                 memset(p, 0, DIRSIZ);
+                //屏蔽. .. “”文件
                 if(strcmp(de.name,".") == 0 || strcmp(de.name,"..") == 0 || strcmp(de.name,"") == 0)
                 {
                     continue;
@@ -73,6 +78,7 @@ void find(char *path, char *target)
                 {
                     continue;
                 }
+                //递归调用 获取目录下target file
                 find(buf, target);
             }
             close(fd);
@@ -82,7 +88,7 @@ void find(char *path, char *target)
 }
 int main(int argc, char *argv[])
 {
-    //参数数量校验
+    //参数数量校验 find path target_file_name
     if(3 != argc)
     {
         printf("argc error\n");

@@ -28,9 +28,12 @@ int main(int argc, char *argv[])
     }
     char *ping = "ping";
     char *pong = "pong";
-
+    //管道的设计原则是单向通信
+    //使用一条管道 会出现父进程write后read的情况 导致子进程读不到数据
+    //使用同一条管道 也可能会出现同时读写操作
     if(0 == ret)
     {
+        
         //子进程关闭chtofa读管道 fatoch写管道
         close(chToFa[0]);
         close(faToCh[1]);
