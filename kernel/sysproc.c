@@ -13,7 +13,7 @@ sys_exit(void)
   int n;
   argint(0, &n);
   exit(n);
-  return 0;  // not reached
+  return 0; // not reached
 }
 
 uint64
@@ -44,7 +44,7 @@ sys_sbrk(void)
 
   argint(0, &n);
   addr = myproc()->sz;
-  if(growproc(n) < 0)
+  if (growproc(n) < 0)
     return -1;
   return addr;
 }
@@ -56,12 +56,14 @@ sys_sleep(void)
   uint ticks0;
 
   argint(0, &n);
-  if(n < 0)
+  if (n < 0)
     n = 0;
   acquire(&tickslock);
   ticks0 = ticks;
-  while(ticks - ticks0 < n){
-    if(killed(myproc())){
+  while (ticks - ticks0 < n)
+  {
+    if (killed(myproc()))
+    {
       release(&tickslock);
       return -1;
     }
@@ -96,11 +98,11 @@ sys_uptime(void)
 uint64
 sys_trace(void)
 {
-  //get the syscall number
+  // get the syscall number
   int syscallNum;
   argint(0, &syscallNum);
   acquire(&myproc()->lock);
-  //set the syscall number to the tracenum
+  // set the syscall number to the tracenum
   myproc()->tracenum = syscallNum;
   release(&myproc()->lock);
   return 0;
@@ -110,15 +112,17 @@ uint64
 sys_sysinfo(void)
 {
   uint64 addr;
+  // 从参数中存储sysinfo的地址
   argaddr(0, &addr);
-
-  struct sysinfo st;//st从哪里读出
+  // sysinfo 临时
+  struct sysinfo st;
   struct proc *p = myproc();
   st.freemem = kfreemem();
   st.nproc = procnum();
-  if(copyout(p->pagetable, addr, (char *)&st, sizeof(st)) < 0)//kernel copyout to user space addr
+  // sysinfo填充到传入的地址addr中
+  if (copyout(p->pagetable, addr, (char *)&st, sizeof(st)) < 0) // kernel copyout to user space addr
   {
     return -1;
   }
   return 0;
-} 
+}

@@ -1,0 +1,7 @@
+usertrap() in kernel/trap.c
+0x7
+user space
+800020d6:	00002903          	lw	s2,0(zero) # 0 <_entry-0x80000000> 
+s2
+访问地址0导致崩溃 //内核地址0分配给谁了
+name:initcode pid:1
